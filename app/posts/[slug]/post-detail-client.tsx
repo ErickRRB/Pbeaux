@@ -28,7 +28,7 @@ export function PostDetailClient({ post }: PostDetailClientProps) {
             <ArrowLeft size={16} />
             Volver
           </Link>
-          <article>
+          <article className={`font-${post.font ?? "editorial"}`}>
             <header className="post-hero">
               <div className="post-hero-copy">
                 <span className="eyebrow">{post.category}</span>

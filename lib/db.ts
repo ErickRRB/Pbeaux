@@ -8,6 +8,7 @@ type DbPost = {
   status: string;
   cover_image: string;
   featured: boolean;
+  font?: string;
   published_at: string | null;
   created_at: string;
   updated_at: string;
@@ -46,6 +47,7 @@ function rowToPost(row: DbPostWithTranslations): BlogPost {
     status: row.status as BlogPost["status"],
     coverImage: row.cover_image,
     featured: row.featured,
+    font: row.font ?? "editorial",
     publishedAt: row.published_at ?? row.created_at,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -110,7 +112,7 @@ export async function fetchPostBySlug(slug: string): Promise<BlogPost | null> {
 
 export async function upsertPost(post: BlogPost): Promise<void> {
   const db = getSupabase();
-  const { error: postError } = await db.from("posts").upsert({
+  const row: Record<string, unknown> = {
     id: post.id,
     slug: post.slug,
     category: post.category,
@@ -120,8 +122,18 @@ export async function upsertPost(post: BlogPost): Promise<void> {
     published_at: post.publishedAt,
     created_at: post.createdAt,
     updated_at: new Date().toISOString(),
-  });
-  if (postError) throw postError;
+  };
+  if (post.font) row.font = post.font;
+
+  let { error: postError } = await db.from("posts").upsert(row);
+  if (postError) {
+    // column doesn't exist yet — retry without font (migration pending)
+    if (postError.code === "42703" && post.font) {
+      delete row.font;
+      ({ error: postError } = await db.from("posts").upsert(row));
+    }
+    if (postError) throw postError;
+  }
   await saveTranslations(post.id, post);
 }
 

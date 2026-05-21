@@ -11,6 +11,8 @@ import {
   LogOut,
   PanelLeftClose,
   PanelLeftOpen,
+  PanelRightClose,
+  PanelRightOpen,
   Pencil,
   Plus,
   Quote,
@@ -37,6 +39,7 @@ export function AdminDashboard() {
   const [locale, setLocale] = useState<Locale>("es");
   const [message, setMessage] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [previewCollapsed, setPreviewCollapsed] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [password, setPassword] = useState("");
@@ -319,7 +322,7 @@ export function AdminDashboard() {
   return (
     <main className="admin-shell">
       <AdminTopbar onCreate={createPost} onLogout={handleLogout} />
-      <div className={`admin-layout${sidebarCollapsed ? " sidebar-collapsed" : ""}`}>
+      <div className={`admin-layout${sidebarCollapsed ? " sidebar-collapsed" : ""}${previewCollapsed ? " preview-collapsed" : ""}`}>
         <aside className={`post-list-panel${sidebarCollapsed ? " collapsed" : ""}`}>
           <div className="panel-heading">
             {!sidebarCollapsed && <span className="eyebrow">Posts</span>}
@@ -467,18 +470,18 @@ export function AdminDashboard() {
               )}
             </div>
             <label>
-              Estado
+              Tipografía
               <select
                 onChange={(event) =>
-                  updateSelectedPost((post) => ({
-                    ...post,
-                    status: event.target.value as BlogPost["status"],
-                  }))
+                  updateSelectedPost((post) => ({ ...post, font: event.target.value }))
                 }
-                value={selectedPost.status}
+                value={selectedPost.font ?? "editorial"}
               >
-                <option value="draft">Draft</option>
-                <option value="published">Published</option>
+                <option value="editorial">Editorial · Georgia</option>
+                <option value="playfair">Elegante · Playfair Display</option>
+                <option value="lora">Literaria · Lora</option>
+                <option value="inter">Moderna · Inter</option>
+                <option value="fraunces">Distintiva · Fraunces</option>
               </select>
             </label>
             <label className="checkbox-label">
@@ -548,22 +551,48 @@ export function AdminDashboard() {
               <Save size={17} />
               {isSaving ? "Guardando..." : isDirty ? "Guardar" : "Sin cambios"}
             </button>
+            <button
+              className={`status-pill ${selectedPost.status === "published" ? "status-published" : "status-draft"}`}
+              onClick={() =>
+                updateSelectedPost((post) => ({
+                  ...post,
+                  status: post.status === "published" ? "draft" : "published",
+                }))
+              }
+              title="Cambiar estado del post"
+              type="button"
+            >
+              {selectedPost.status === "published" ? "● Publicado" : "○ Borrador"}
+            </button>
             <button className="danger-button" onClick={deletePost} type="button">
               <Trash2 size={17} />
               Eliminar post
             </button>
-            {message ? <span>{message}</span> : null}
+            {message ? <span className="editor-message">{message}</span> : null}
           </div>
         </section>
 
-        <aside className="preview-panel">
-          <span className="eyebrow">Preview</span>
-          <h2>{selectedTranslation.title}</h2>
-          <p>{selectedTranslation.excerpt}</p>
-          <figure className="preview-cover">
-            <img alt={selectedTranslation.title} src={selectedPost.coverImage} />
-          </figure>
-          <BlockRenderer blocks={selectedTranslation.blocks} />
+        <aside className={`preview-panel${previewCollapsed ? " collapsed" : ""}`}>
+          <div className="panel-heading">
+            {!previewCollapsed && <span className="eyebrow">Preview</span>}
+            <button
+              onClick={() => setPreviewCollapsed((v) => !v)}
+              title={previewCollapsed ? "Expandir preview" : "Minimizar preview"}
+              type="button"
+            >
+              {previewCollapsed ? <PanelRightOpen size={18} /> : <PanelRightClose size={18} />}
+            </button>
+          </div>
+          {!previewCollapsed && (
+            <>
+              <h2>{selectedTranslation.title}</h2>
+              <p>{selectedTranslation.excerpt}</p>
+              <figure className="preview-cover">
+                <img alt={selectedTranslation.title} src={selectedPost.coverImage} />
+              </figure>
+              <BlockRenderer blocks={selectedTranslation.blocks} />
+            </>
+          )}
         </aside>
       </div>
     </main>
@@ -679,28 +708,22 @@ function BlockFields({
 
   if (block.type === "paragraph") {
     return (
-      <label className="block-fields">
-        Texto
-        <RichTextarea
-          onChange={(text) => onUpdate({ ...block, text })}
-          placeholder="Escribí el párrafo aquí..."
-          value={block.text}
-        />
-      </label>
+      <RichTextarea
+        onChange={(text) => onUpdate({ ...block, text })}
+        placeholder="Escribí el párrafo aquí..."
+        value={block.text}
+      />
     );
   }
 
   if (block.type === "quote") {
     return (
       <div className="block-fields">
-        <label>
-          Cita
-          <RichTextarea
-            onChange={(text) => onUpdate({ ...block, text })}
-            placeholder="Texto de la cita destacada"
-            value={block.text}
-          />
-        </label>
+        <RichTextarea
+          onChange={(text) => onUpdate({ ...block, text })}
+          placeholder="Texto de la cita destacada"
+          value={block.text}
+        />
         <label>
           Autor
           <input
@@ -843,6 +866,15 @@ function RichTextarea({
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
 
+  useEffect(() => {
+    if (ref.current) fitHeight(ref.current);
+  }, [value]);
+
+  function fitHeight(el: HTMLTextAreaElement) {
+    el.style.height = "auto";
+    el.style.height = `${Math.max(el.scrollHeight, 120)}px`;
+  }
+
   function wrap(before: string, after: string) {
     const ta = ref.current;
     if (!ta) return;
@@ -887,6 +919,7 @@ function RichTextarea({
       </div>
       <textarea
         onChange={(event) => onChange(event.target.value)}
+        onInput={(e) => fitHeight(e.currentTarget)}
         placeholder={placeholder}
         ref={ref}
         value={value}

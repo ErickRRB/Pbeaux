@@ -62,6 +62,7 @@ export type BlogPost = {
   status: PostStatus;
   coverImage: string;
   featured: boolean;
+  font?: string;
   publishedAt: string;
   createdAt: string;
   updatedAt: string;

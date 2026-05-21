@@ -711,6 +711,14 @@ textarea {
   grid-template-columns: 52px minmax(0, 1.35fr) minmax(360px, 0.9fr);
 }
 
+.admin-layout.preview-collapsed {
+  grid-template-columns: 300px minmax(0, 1.35fr) 52px;
+}
+
+.admin-layout.sidebar-collapsed.preview-collapsed {
+  grid-template-columns: 52px minmax(0, 1.35fr) 52px;
+}
+
 .post-list-panel.collapsed {
   padding: 12px 8px;
 }
@@ -851,10 +859,17 @@ textarea {
 }
 
 .block-fields > label:first-child,
+.block-fields > .rich-textarea,
 .image-input,
 .gallery-admin-item,
 .block-fields .secondary-button {
   grid-column: 1 / -1;
+}
+
+.block-editor-card > .rich-textarea {
+  margin: 0 -1px;
+  border-radius: 0 0 8px 8px;
+  border-top: 1px solid var(--line);
 }
 
 .image-input {
@@ -884,6 +899,71 @@ textarea {
   font-size: 12px;
   color: var(--danger);
   margin-top: 4px;
+}
+
+.status-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.status-pill.status-draft {
+  background: #f0ede6;
+  color: var(--muted);
+  border-color: var(--line);
+}
+
+.status-pill.status-published {
+  background: #e6f4e6;
+  color: #2a6b2a;
+  border-color: #b3d9b3;
+}
+
+.status-pill:hover {
+  filter: brightness(0.95);
+}
+
+.editor-message {
+  font-size: 13px;
+  color: var(--muted);
+  margin-left: auto;
+}
+
+/* Post body typography fonts */
+article.font-playfair h1,
+article.font-playfair h2,
+article.font-playfair h3,
+article.font-playfair p,
+article.font-playfair blockquote {
+  font-family: "Playfair Display", Georgia, serif;
+}
+
+article.font-lora h1,
+article.font-lora h2,
+article.font-lora h3,
+article.font-lora p,
+article.font-lora blockquote {
+  font-family: "Lora", Georgia, serif;
+}
+
+article.font-inter h1,
+article.font-inter h2,
+article.font-inter h3,
+article.font-inter p,
+article.font-inter blockquote {
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+article.font-fraunces h1,
+article.font-fraunces h2,
+article.font-fraunces h3,
+article.font-fraunces p,
+article.font-fraunces blockquote {
+  font-family: "Fraunces", Georgia, serif;
 }
 
 .checkbox-label {
