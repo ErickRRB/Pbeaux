@@ -128,22 +128,44 @@ export function AdminDashboard() {
     setIsSaving(true);
     setMessage("Guardando...");
     try {
-      const res = await fetch(`/api/admin/posts/${selectedPost.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(selectedPost),
-      });
-      if (res.ok) {
-        setIsDirty(false);
-        setMessage("Guardado en Supabase ✓");
-      } else {
-        const detail = await readErrorDetail(res);
-        console.error("Error al guardar post", detail);
-        setMessage(`Error al guardar: ${detail}`);
-      }
+      await persistPost(selectedPost);
+      setIsDirty(false);
+      setMessage("Guardado en Supabase ✓");
     } catch (err) {
       console.error("Error al guardar post", err);
       setMessage(`Error al guardar: ${getClientErrorDetail(err)}`);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function toggleStatusAndSave() {
+    if (!selectedPost || isSaving) return;
+
+    const previousPost = selectedPost;
+    const nextPost: BlogPost = {
+      ...selectedPost,
+      status: selectedPost.status === "published" ? "draft" : "published",
+      updatedAt: new Date().toISOString(),
+    };
+    const nextLabel = nextPost.status === "published" ? "Publicado" : "Borrador";
+
+    setPosts((prev) =>
+      prev.map((post) => (post.id === selectedPost.id ? nextPost : post)),
+    );
+    setIsSaving(true);
+    setMessage(`Guardando estado: ${nextLabel}...`);
+
+    try {
+      await persistPost(nextPost);
+      setIsDirty(false);
+      setMessage(`Estado guardado: ${nextLabel}`);
+    } catch (err) {
+      setPosts((prev) =>
+        prev.map((post) => (post.id === previousPost.id ? previousPost : post)),
+      );
+      console.error("Error al guardar estado del post", err);
+      setMessage(`Error al guardar estado: ${getClientErrorDetail(err)}`);
     } finally {
       setIsSaving(false);
     }
@@ -288,6 +310,15 @@ export function AdminDashboard() {
   function getClientErrorDetail(err: unknown) {
     if (err instanceof Error) return err.message;
     return String(err);
+  }
+
+  async function persistPost(post: BlogPost) {
+    const res = await fetch(`/api/admin/posts/${post.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(post),
+    });
+    if (!res.ok) throw new Error(await readErrorDetail(res));
   }
 
   function duplicateLocale() {
@@ -632,12 +663,8 @@ export function AdminDashboard() {
             </button>
             <button
               className={`status-pill ${selectedPost.status === "published" ? "status-published" : "status-draft"}`}
-              onClick={() =>
-                updateSelectedPost((post) => ({
-                  ...post,
-                  status: post.status === "published" ? "draft" : "published",
-                }))
-              }
+              disabled={isSaving}
+              onClick={toggleStatusAndSave}
               title="Cambiar estado del post"
               type="button"
             >

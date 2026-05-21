@@ -11,3 +11,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# Local source images used to generate favicons.
+/9389434891672224026.jpg
+/unnamed.jpg
