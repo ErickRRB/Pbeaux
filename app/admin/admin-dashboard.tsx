@@ -481,6 +481,19 @@ export function AdminDashboard() {
                 <option value="published">Published</option>
               </select>
             </label>
+            <label className="checkbox-label">
+              <input
+                checked={selectedPost.featured}
+                onChange={(event) =>
+                  updateSelectedPost((post) => ({
+                    ...post,
+                    featured: event.target.checked,
+                  }))
+                }
+                type="checkbox"
+              />
+              Destacado (Editor&apos;s Choice)
+            </label>
           </div>
 
           <div className="block-toolbar">
