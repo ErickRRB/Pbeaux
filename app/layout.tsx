@@ -6,8 +6,12 @@ export const metadata: Metadata = {
   description:
     "Nueva version from scratch de PMag con diseño editorial, posts multi-idioma y admin por bloques.",
   icons: {
-    icon: "/favicon.ico",
-    apple: "/icon.png",
+    icon: [
+      { url: "/favicon.ico?v=2", sizes: "any" },
+      { url: "/icon.png?v=2", sizes: "1024x1024", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico?v=2",
+    apple: [{ url: "/icon.png?v=2", sizes: "1024x1024", type: "image/png" }],
   },
 };
 
