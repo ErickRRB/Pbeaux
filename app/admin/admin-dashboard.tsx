@@ -451,6 +451,7 @@ export function AdminDashboard() {
             </label>
             <div className="cover-image-field">
               <ImageInput
+                context="banner"
                 label="Cover image"
                 onChange={(coverImage) =>
                   updateSelectedPost((post) => ({ ...post, coverImage }))
@@ -763,6 +764,7 @@ function BlockFields({
         {block.images.map((image, index) => (
           <div className="gallery-admin-item" key={image.id}>
             <ImageInput
+              context="gallery"
               label={`Imagen ${index + 1}`}
               onChange={(src) =>
                 onUpdate({
@@ -817,11 +819,49 @@ function BlockFields({
   return <p className="muted">Separador visual.</p>;
 }
 
+// Max dimensions per context and orientation
+const RESIZE_TARGETS = {
+  banner:  { landscape: [1200, 675] as const, portrait: [675, 1200] as const },
+  content: { landscape: [1200, 900] as const, portrait: [800, 1200] as const },
+  gallery: { landscape: [900, 600] as const,  portrait: [600, 900] as const },
+};
+
+async function resizeToWebP(file: File, context: keyof typeof RESIZE_TARGETS): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const { naturalWidth: w, naturalHeight: h } = img;
+      const isPortrait = h > w;
+      const [maxW, maxH] = RESIZE_TARGETS[context][isPortrait ? "portrait" : "landscape"];
+
+      // Don't upscale — if already fits, skip canvas
+      if (w <= maxW && h <= maxH) {
+        resolve(file);
+        return;
+      }
+
+      const scale = Math.min(maxW / w, maxH / h);
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(w * scale);
+      canvas.height = Math.round(h * scale);
+      const ctx = canvas.getContext("2d")!;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error("Canvas toBlob failed"))), "image/webp", 0.85);
+    };
+    img.onerror = reject;
+    img.src = objectUrl;
+  });
+}
+
 function ImageInput({
+  context = "content",
   label,
   onChange,
   value,
 }: {
+  context?: keyof typeof RESIZE_TARGETS;
   label: string;
   onChange: (value: string) => void;
   value: string;
@@ -835,18 +875,20 @@ function ImageInput({
     setUploading(true);
     setUploadError("");
     try {
+      const blob = await resizeToWebP(file, context);
+      const resized = new File([blob], file.name.replace(/\.[^.]+$/, ".webp"), { type: "image/webp" });
       const body = new FormData();
-      body.append("file", file);
+      body.append("file", resized);
       const res = await fetch("/api/admin/upload", { method: "POST", body });
       if (res.ok) {
         const { url } = await res.json();
         onChange(url);
       } else {
-        const { error } = await res.json();
+        const { error } = await res.json().catch(() => ({}));
         setUploadError(error ?? "Error al subir");
       }
     } catch {
-      setUploadError("Error de red al subir");
+      setUploadError("Error al procesar la imagen");
     } finally {
       setUploading(false);
       event.target.value = "";
@@ -861,7 +903,7 @@ function ImageInput({
       </label>
       <label className={`file-button${uploading ? " uploading" : ""}`}>
         <ImagePlus size={17} />
-        {uploading ? "Subiendo..." : "Subir desde PC"}
+        {uploading ? "Procesando..." : "Subir desde PC"}
         <input accept="image/*" disabled={uploading} onChange={handleFile} type="file" />
       </label>
       {uploadError ? <span className="upload-error">{uploadError}</span> : null}
