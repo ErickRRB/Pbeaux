@@ -1,4 +1,21 @@
+import { ReactNode } from "react";
 import { ContentBlock } from "@/lib/content-types";
+
+// Parses **bold**, *italic*, [link](url), and \n → <br>
+function parseInline(text: string, baseKey: string): ReactNode {
+  const segments = text.split(/(\*\*[^*\n]+\*\*|\*[^*\n]+\*|\[[^\]\n]+\]\([^)\n]+\)|\n)/);
+  return segments.map((seg, i) => {
+    const key = `${baseKey}-${i}`;
+    if (seg === "\n") return <br key={key} />;
+    if (/^\*\*[^*]+\*\*$/.test(seg)) return <strong key={key}>{seg.slice(2, -2)}</strong>;
+    if (/^\*[^*]+\*$/.test(seg)) return <em key={key}>{seg.slice(1, -1)}</em>;
+    const link = seg.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+    if (link) {
+      return <a href={link[2]} key={key} rel="noopener noreferrer" target="_blank">{link[1]}</a>;
+    }
+    return seg;
+  });
+}
 
 type BlockRendererProps = {
   blocks: ContentBlock[];
@@ -14,7 +31,7 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
         }
 
         if (block.type === "paragraph") {
-          return <p key={block.id}>{block.text}</p>;
+          return <p key={block.id}>{parseInline(block.text, block.id)}</p>;
         }
 
         if (block.type === "image") {
@@ -45,7 +62,7 @@ export function BlockRenderer({ blocks }: BlockRendererProps) {
         if (block.type === "quote") {
           return (
             <blockquote key={block.id}>
-              <p>{block.text}</p>
+              <p>{parseInline(block.text, block.id)}</p>
               {block.byline ? <cite>{block.byline}</cite> : null}
             </blockquote>
           );

@@ -18,7 +18,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { BlockRenderer } from "@/components/block-renderer";
 import {
   BlockAlign,
@@ -668,8 +668,8 @@ function BlockFields({
     return (
       <label className="block-fields">
         Texto
-        <textarea
-          onChange={(event) => onUpdate({ ...block, text: event.target.value })}
+        <RichTextarea
+          onChange={(text) => onUpdate({ ...block, text })}
           placeholder="Escribí el párrafo aquí..."
           value={block.text}
         />
@@ -682,8 +682,8 @@ function BlockFields({
       <div className="block-fields">
         <label>
           Cita
-          <textarea
-            onChange={(event) => onUpdate({ ...block, text: event.target.value })}
+          <RichTextarea
+            onChange={(text) => onUpdate({ ...block, text })}
             placeholder="Texto de la cita destacada"
             value={block.text}
           />
@@ -817,6 +817,69 @@ function BlockFields({
   }
 
   return <p className="muted">Separador visual.</p>;
+}
+
+function RichTextarea({
+  onChange,
+  placeholder,
+  value,
+}: {
+  onChange: (value: string) => void;
+  placeholder?: string;
+  value: string;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  function wrap(before: string, after: string) {
+    const ta = ref.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = ta.value.slice(start, end);
+    const next = ta.value.slice(0, start) + before + selected + after + ta.value.slice(end);
+    onChange(next);
+    requestAnimationFrame(() => {
+      ta.selectionStart = start + before.length;
+      ta.selectionEnd = start + before.length + selected.length;
+      ta.focus();
+    });
+  }
+
+  function insertLink() {
+    const ta = ref.current;
+    if (!ta) return;
+    const url = window.prompt("URL del enlace (ej: https://ejemplo.com):");
+    if (!url) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = ta.value.slice(start, end) || "texto del enlace";
+    const insertion = `[${selected}](${url})`;
+    const next = ta.value.slice(0, start) + insertion + ta.value.slice(end);
+    onChange(next);
+    requestAnimationFrame(() => ta.focus());
+  }
+
+  return (
+    <div className="rich-textarea">
+      <div className="format-toolbar">
+        <button onClick={() => wrap("**", "**")} title="Negrita (seleccioná texto y hacé clic)" type="button">
+          <strong>B</strong>
+        </button>
+        <button onClick={() => wrap("*", "*")} title="Cursiva" type="button">
+          <em>I</em>
+        </button>
+        <button onClick={insertLink} title="Insertar enlace" type="button">
+          Enlace
+        </button>
+      </div>
+      <textarea
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        ref={ref}
+        value={value}
+      />
+    </div>
+  );
 }
 
 // Max dimensions per context and orientation

@@ -886,6 +886,43 @@ textarea {
   margin-top: 4px;
 }
 
+.rich-textarea {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.format-toolbar {
+  display: flex;
+  gap: 2px;
+  padding: 4px 6px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+}
+
+.format-toolbar button {
+  padding: 2px 8px;
+  min-height: unset;
+  font-size: 13px;
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--ink);
+  line-height: 1.6;
+}
+
+.format-toolbar button:hover {
+  background: var(--surface);
+}
+
+.rich-textarea textarea {
+  border-radius: 0 0 6px 6px;
+  border-top: none;
+}
+
 .cover-image-field {
   display: flex;
   flex-direction: column;
