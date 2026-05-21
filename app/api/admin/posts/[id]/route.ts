@@ -13,11 +13,19 @@ export async function PUT(req: Request) {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  const post = (await req.json()) as BlogPost;
-  await upsertPost(post);
-  revalidatePath("/");
-  revalidatePath(`/posts/${post.slug}`);
-  return NextResponse.json({ ok: true });
+  try {
+    const post = (await req.json()) as BlogPost;
+    await upsertPost(post);
+    revalidatePath("/");
+    revalidatePath(`/posts/${post.slug}`);
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[admin/posts] PUT failed", err);
+    return NextResponse.json(
+      { error: "No se pudo guardar el post", detail: getErrorDetail(err) },
+      { status: 500 },
+    );
+  }
 }
 
 export async function DELETE(
@@ -27,8 +35,24 @@ export async function DELETE(
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  const { id } = await params;
-  await removePost(id);
-  revalidatePath("/");
-  return NextResponse.json({ ok: true });
+  try {
+    const { id } = await params;
+    await removePost(id);
+    revalidatePath("/");
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[admin/posts] DELETE failed", err);
+    return NextResponse.json(
+      { error: "No se pudo eliminar el post", detail: getErrorDetail(err) },
+      { status: 500 },
+    );
+  }
+}
+
+function getErrorDetail(err: unknown) {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "object" && err !== null && "message" in err) {
+    return String((err as { message?: unknown }).message);
+  }
+  return String(err);
 }

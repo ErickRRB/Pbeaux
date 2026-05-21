@@ -13,16 +13,40 @@ export async function GET() {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  const posts = await fetchAllPosts();
-  return NextResponse.json(posts);
+  try {
+    const posts = await fetchAllPosts();
+    return NextResponse.json(posts);
+  } catch (err) {
+    console.error("[admin/posts] GET failed", err);
+    return NextResponse.json(
+      { error: "No se pudieron cargar los posts", detail: getErrorDetail(err) },
+      { status: 500 },
+    );
+  }
 }
 
 export async function POST(req: Request) {
   if (!(await isAdmin())) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
-  const post = (await req.json()) as BlogPost;
-  await upsertPost(post);
-  revalidatePath("/");
-  return NextResponse.json({ ok: true });
+  try {
+    const post = (await req.json()) as BlogPost;
+    await upsertPost(post);
+    revalidatePath("/");
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[admin/posts] POST failed", err);
+    return NextResponse.json(
+      { error: "No se pudo crear el post", detail: getErrorDetail(err) },
+      { status: 500 },
+    );
+  }
+}
+
+function getErrorDetail(err: unknown) {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "object" && err !== null && "message" in err) {
+    return String((err as { message?: unknown }).message);
+  }
+  return String(err);
 }

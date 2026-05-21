@@ -127,8 +127,13 @@ export async function upsertPost(post: BlogPost): Promise<void> {
 
   let { error: postError } = await db.from("posts").upsert(row);
   if (postError) {
-    // column doesn't exist yet — retry without font (migration pending)
-    if (postError.code === "42703" && post.font) {
+    const isMissingFontColumn =
+      post.font &&
+      (postError.code === "42703" ||
+        postError.code === "PGRST204" ||
+        postError.message?.toLowerCase().includes("font"));
+
+    if (isMissingFontColumn) {
       delete row.font;
       ({ error: postError } = await db.from("posts").upsert(row));
     }

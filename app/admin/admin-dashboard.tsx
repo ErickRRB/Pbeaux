@@ -44,7 +44,7 @@ export function AdminDashboard() {
   const [isDirty, setIsDirty] = useState(false);
   const [password, setPassword] = useState("");
   const [toast, setToast] = useState("");
-  const toastTimer = useRef<ReturnType<typeof setTimeout>>();
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const selectedPost = useMemo(
     () => posts.find((post) => post.id === selectedPostId) ?? posts[0],
@@ -137,8 +137,13 @@ export function AdminDashboard() {
         setIsDirty(false);
         setMessage("Guardado en Supabase ✓");
       } else {
-        setMessage("Error al guardar");
+        const detail = await readErrorDetail(res);
+        console.error("Error al guardar post", detail);
+        setMessage(`Error al guardar: ${detail}`);
       }
+    } catch (err) {
+      console.error("Error al guardar post", err);
+      setMessage(`Error al guardar: ${getClientErrorDetail(err)}`);
     } finally {
       setIsSaving(false);
     }
@@ -188,7 +193,9 @@ export function AdminDashboard() {
       setIsDirty(false);
       setMessage("Post creado");
     } else {
-      setMessage("Error al crear el post");
+      const detail = await readErrorDetail(res);
+      console.error("Error al crear post", detail);
+      setMessage(`Error al crear: ${detail}`);
     }
   }
 
@@ -204,13 +211,15 @@ export function AdminDashboard() {
       setIsDirty(false);
       setMessage("Post eliminado");
     } else {
-      setMessage("Error al eliminar");
+      const detail = await readErrorDetail(res);
+      console.error("Error al eliminar post", detail);
+      setMessage(`Error al eliminar: ${detail}`);
     }
   }
 
   function showToast(message: string) {
     setToast(message);
-    clearTimeout(toastTimer.current);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(""), 3500);
   }
 
@@ -248,7 +257,14 @@ export function AdminDashboard() {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedOldest),
-      }).catch(() => {});
+      })
+        .then(async (res) => {
+          if (!res.ok) throw new Error(await readErrorDetail(res));
+        })
+        .catch((err) => {
+          console.error("Error al remover destacado anterior", err);
+          showToast(`No se pudo guardar el destacado removido: ${getClientErrorDetail(err)}`);
+        });
 
       const shortTitle =
         oldestTitle.length > 45
@@ -258,6 +274,20 @@ export function AdminDashboard() {
     } else {
       updateSelectedPost((post) => ({ ...post, featured: true }));
     }
+  }
+
+  async function readErrorDetail(res: Response) {
+    try {
+      const data = (await res.json()) as { error?: string; detail?: string };
+      return data.detail || data.error || `${res.status} ${res.statusText}`;
+    } catch {
+      return `${res.status} ${res.statusText}`;
+    }
+  }
+
+  function getClientErrorDetail(err: unknown) {
+    if (err instanceof Error) return err.message;
+    return String(err);
   }
 
   function duplicateLocale() {
@@ -1089,4 +1119,3 @@ function createBlock(type: ContentBlock["type"]): ContentBlock {
   if (type === "quote") return { id, type, text: "", byline: "" };
   return { id, type: "divider" };
 }
-
