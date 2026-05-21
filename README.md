@@ -18,6 +18,7 @@ Nueva version from scratch de PMag.
 - [Implementation log](docs/implementation-log.md)
 - [Opciones de editor](docs/editor-options.md)
 - [Migracion desde Mozello](docs/migration-mozello.md)
+- [Deploy Vercel + Supabase free tier](docs/deploy-vercel-supabase.md)
 
 ## Desarrollo local
 

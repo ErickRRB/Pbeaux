@@ -25,6 +25,10 @@ Proyecto en etapa de definicion y prototipo. La base visual elegida es "Collage 
 - Se agregaron seeds locales con los 5 posts iniciales detectados desde Mozello.
 - Se agrego Dockerfile y docker-compose para desarrollo local en `localhost:3001`.
 - Se valido `npm run typecheck` y `npm run build`.
+- Se quito el CTA publico hacia admin desde la landing.
+- Se dejo `/admin` como acceso directo por URL.
+- Se mejoro el login local y se agrego logout visible para revisar la vista publica.
+- Se agrego guia de deploy free tier para Vercel + Supabase.
 
 ## Pendiente inmediato
 
@@ -34,7 +38,7 @@ Proyecto en etapa de definicion y prototipo. La base visual elegida es "Collage 
 - Implementar upload persistente de imagenes en storage local.
 - Extraer contenido real completo de los posts de Mozello.
 - Convertir posts migrados a bloques reales.
-- Definir email real autorizado para admin. Estado: definido placeholder `bravopat@gmail.com`.
+- Definir email real autorizado para admin. Estado: definido local `bravopat@gmail.com`.
 
 ## Backlog funcional
 

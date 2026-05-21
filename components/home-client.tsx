@@ -122,9 +122,6 @@ export function HomeClient() {
             <span className="eyebrow">Ultimos posts</span>
             <h2>Archivo reciente</h2>
           </div>
-          <Link className="text-link" href="/admin">
-            Crear o editar posts
-          </Link>
         </section>
 
         <section className="post-grid">

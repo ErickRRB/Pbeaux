@@ -503,6 +503,8 @@ button:disabled {
 }
 
 .login-panel {
+  display: grid;
+  gap: 18px;
   width: min(100%, 480px);
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -518,6 +520,11 @@ button:disabled {
   font-size: 52px;
   font-weight: 500;
   line-height: 0.95;
+}
+
+.login-panel h1,
+.login-panel p {
+  margin-bottom: 0;
 }
 
 .login-panel p,
@@ -609,9 +616,17 @@ textarea {
 
 .form-message {
   min-height: 34px;
+  margin: 0;
   border-radius: 8px;
   background: #f2ede3;
   padding: 8px 10px;
+}
+
+.login-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
 }
 
 .admin-shell {

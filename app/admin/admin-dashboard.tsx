@@ -3,6 +3,7 @@
 import {
   ArrowDown,
   ArrowUp,
+  Eye,
   FileImage,
   Heading2,
   ImagePlus,
@@ -102,8 +103,10 @@ export function AdminDashboard() {
   }
 
   function handleLogin() {
+    setMessage("");
+
     if (email.trim().toLowerCase() !== adminEmail.toLowerCase()) {
-      setMessage(`Para este placeholder usa ${adminEmail}`);
+      setMessage("Email no autorizado");
       return;
     }
 
@@ -219,29 +222,37 @@ export function AdminDashboard() {
   if (!isAuthenticated) {
     return (
       <main className="admin-login">
-        <section className="login-panel">
+        <form
+          className="login-panel"
+          onSubmit={(event) => {
+            event.preventDefault();
+            handleLogin();
+          }}
+        >
           <span className="eyebrow">Admin local</span>
           <h1>Entrar a PMag</h1>
           <p>
-            Placeholder de login para avanzar la UI. En produccion esto se cambia
-            por magic link de Supabase limitado a tu email.
+            Acceso privado para gestionar posts. En produccion se reemplaza por
+            magic link de Supabase limitado al email autorizado.
           </p>
           <label>
             Email autorizado
             <input
               onChange={(event) => setEmail(event.target.value)}
-              placeholder={adminEmail}
+              placeholder="Ingresar email"
               value={email}
             />
           </label>
-          <button className="primary-button" onClick={handleLogin} type="button">
-            Entrar
-          </button>
+          <div className="login-actions">
+            <button className="primary-button" type="submit">
+              Entrar
+            </button>
+            <Link className="secondary-button" href="/">
+              Volver a la home
+            </Link>
+          </div>
           {message ? <p className="form-message">{message}</p> : null}
-          <Link className="text-link" href="/">
-            Volver a la home
-          </Link>
-        </section>
+        </form>
       </main>
     );
   }
@@ -488,12 +499,17 @@ function AdminTopbar({
         PMag
       </Link>
       <div>
+        <Link className="secondary-button" href="/">
+          <Eye size={17} />
+          Ver sitio
+        </Link>
         <button className="secondary-button" onClick={onCreate} type="button">
           <Plus size={17} />
           New post
         </button>
-        <button className="icon-button" onClick={onLogout} title="Salir" type="button">
+        <button className="secondary-button" onClick={onLogout} type="button">
           <LogOut size={18} />
+          Logout
         </button>
       </div>
     </header>

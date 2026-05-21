@@ -70,6 +70,11 @@ Inicializar la app Next.js en este repo, traer el prototipo A como base visual y
 - Docker expone la app en `http://localhost:3001` para evitar choque con otro proceso local en `3000`.
 - Se ocultaron los accesos publicos a `Posts` y `Admin`; el admin queda como acceso directo por URL `/admin`.
 - El login placeholder acepta `bravopat@gmail.com` sin magic link.
+- Se quito el CTA publico "Crear o editar posts" de la landing.
+- Se agrego logout visible en la topbar admin para volver a revisar la web como usuario comun.
+- Se corrigio el layout del login admin para que `Entrar` y `Volver a la home` no se solapen.
+- Se removio `bravopat@gmail.com` como placeholder visible del input.
+- Se agrego `docs/deploy-vercel-supabase.md` con paso a paso para plan gratuito.
 
 ### Validacion
 
