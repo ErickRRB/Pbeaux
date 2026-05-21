@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { getSupabase } from "@/lib/supabase-server";
 
 export async function POST(req: Request) {
   const jar = await cookies();
@@ -13,28 +14,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No se recibió ningún archivo" }, { status: 400 });
   }
 
-  const ext = file.name.split(".").pop() ?? "jpg";
+  const ext = file.name.split(".").pop() ?? "webp";
   const safeName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
   const buffer = await file.arrayBuffer();
-  const uploadRes = await fetch(
-    `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/media/${safeName}`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-        "Content-Type": file.type,
-        "x-upsert": "true",
-      },
-      body: buffer,
-    },
-  );
+  const db = getSupabase();
 
-  if (!uploadRes.ok) {
-    const err = await uploadRes.text();
-    return NextResponse.json({ error: err }, { status: 500 });
+  const { error } = await db.storage.from("media").upload(safeName, buffer, {
+    contentType: file.type,
+    upsert: true,
+  });
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/media/${safeName}`;
-  return NextResponse.json({ url });
+  const { data } = db.storage.from("media").getPublicUrl(safeName);
+  return NextResponse.json({ url: data.publicUrl });
 }
