@@ -85,6 +85,19 @@ npm run build
 
 Ambos comandos pasaron correctamente.
 
+## 2026-05-21 - Package manager
+
+### Implementado
+
+- Se cambio el proyecto de npm a pnpm.
+- Se elimino `package-lock.json`.
+- Se agrego `pnpm-lock.yaml`.
+- Se declaro `packageManager: pnpm@10.16.1`.
+- Docker ahora instala y levanta con pnpm.
+- Vercel debe usar:
+  - Install Command: `pnpm install --frozen-lockfile`
+  - Build Command: `pnpm build`
+
 ### Limitaciones actuales
 
 - La persistencia todavia es `localStorage`.

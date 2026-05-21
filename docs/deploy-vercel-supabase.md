@@ -72,9 +72,10 @@ create table post_translations (
 2. Conectar GitHub.
 3. Importar repo `ErickRRB/Pbeaux`.
 4. Framework Preset: Next.js.
-5. Build command: `npm run build`.
-6. Output directory: dejar default.
-7. Plan: Free.
+5. Install command: `pnpm install --frozen-lockfile`.
+6. Build command: `pnpm build`.
+7. Output directory: dejar default.
+8. Plan: Free.
 
 ## 5. Variables de entorno en Vercel
 
@@ -108,8 +109,8 @@ Con eso ya se puede probar la web sin comprar dominio.
 
 - Confirmar que no haya links publicos a `/admin`.
 - Confirmar que `/admin` abre solo por URL directa.
-- Confirmar `npm run build`.
-- Confirmar `npm audit --omit=dev`.
+- Confirmar `pnpm build`.
+- Confirmar `pnpm audit --prod`.
 - Definir si se publica con contenido seed o si antes se migran posts reales.
 
 ## 8. Siguiente fase tecnica

@@ -23,8 +23,8 @@ Nueva version from scratch de PMag.
 ## Desarrollo local
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
 
 Abrir:
