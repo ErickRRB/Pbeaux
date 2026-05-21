@@ -452,6 +452,21 @@ button:disabled {
   margin: 58px auto 0;
 }
 
+.post-reading-band {
+  width: 100vw;
+  margin: 64px calc(50% - 50vw) 0;
+  padding: 58px 24px 76px;
+  border-top: 1px solid rgba(231, 226, 216, 0.72);
+  border-bottom: 1px solid rgba(231, 226, 216, 0.72);
+  background:
+    linear-gradient(180deg, rgba(244, 239, 229, 0.78), rgba(249, 247, 242, 0.96)),
+    var(--paper);
+}
+
+.post-reading-band .content-blocks {
+  margin-top: 0;
+}
+
 .content-blocks h2,
 .content-blocks h3 {
   margin: 38px 0 12px;
@@ -1255,6 +1270,11 @@ article.font-fraunces blockquote {
 
   .post-hero figure {
     height: 330px;
+  }
+
+  .post-reading-band {
+    margin-top: 42px;
+    padding: 40px 16px 56px;
   }
 
   .image-left,

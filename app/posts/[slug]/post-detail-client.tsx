@@ -48,7 +48,9 @@ export function PostDetailClient({ post }: PostDetailClientProps) {
                 <img alt={translation.title} src={post.coverImage} />
               </figure>
             </header>
-            <BlockRenderer blocks={translation.blocks} />
+            <section className="post-reading-band">
+              <BlockRenderer blocks={translation.blocks} />
+            </section>
           </article>
         </div>
       </main>
