@@ -8,8 +8,9 @@ import {
   Heading2,
   ImagePlus,
   LayoutGrid,
-  ListPlus,
   LogOut,
+  PanelLeftClose,
+  PanelLeftOpen,
   Pencil,
   Plus,
   Quote,
@@ -17,7 +18,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { BlockRenderer } from "@/components/block-renderer";
 import {
   BlockAlign,
@@ -26,31 +27,19 @@ import {
   Locale,
   LOCALES,
 } from "@/lib/content-types";
-import {
-  cloneSeedPosts,
-  getTranslation,
-  loadStoredPosts,
-  saveStoredPosts,
-} from "@/lib/content-store";
+import { getTranslation } from "@/lib/content-store";
 import { createId, slugify } from "@/lib/format";
 
-const fallbackAdminEmail = "bravopat@gmail.com";
-
 export function AdminDashboard() {
-  const adminEmail =
-    process.env.NEXT_PUBLIC_ADMIN_EMAIL?.trim() || fallbackAdminEmail;
-  const [email, setEmail] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [selectedPostId, setSelectedPostId] = useState<string>("");
   const [locale, setLocale] = useState<Locale>("es");
   const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    const loadedPosts = loadStoredPosts();
-    setPosts(loadedPosts);
-    setSelectedPostId(loadedPosts[0]?.id ?? "");
-  }, []);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
+  const [password, setPassword] = useState("");
 
   const selectedPost = useMemo(
     () => posts.find((post) => post.id === selectedPostId) ?? posts[0],
@@ -61,23 +50,56 @@ export function AdminDashboard() {
     ? getTranslation(selectedPost, locale)
     : undefined;
 
-  function persist(nextPosts: BlogPost[], nextMessage = "Cambios guardados") {
-    setPosts(nextPosts);
-    saveStoredPosts(nextPosts);
-    setMessage(nextMessage);
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  async function checkAuth() {
+    const res = await fetch("/api/admin/posts");
+    if (res.ok) {
+      const data: BlogPost[] = await res.json();
+      setPosts(data);
+      setSelectedPostId(data[0]?.id ?? "");
+      setIsAuthenticated(true);
+    } else {
+      setIsAuthenticated(false);
+    }
+  }
+
+  async function handleLogin(event: FormEvent) {
+    event.preventDefault();
+    setMessage("");
+    const res = await fetch("/api/admin/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    if (res.ok) {
+      setPassword("");
+      await checkAuth();
+    } else {
+      setMessage("Contraseña incorrecta");
+    }
+  }
+
+  async function handleLogout() {
+    await fetch("/api/admin/auth", { method: "DELETE" });
+    setIsAuthenticated(false);
+    setPosts([]);
+    setPassword("");
+    setMessage("");
   }
 
   function updateSelectedPost(updater: (post: BlogPost) => BlogPost) {
-    if (!selectedPost) {
-      return;
-    }
-
+    if (!selectedPost) return;
     const nextPosts = posts.map((post) =>
       post.id === selectedPost.id
         ? updater({ ...post, translations: { ...post.translations } })
         : post,
     );
-    persist(nextPosts);
+    setPosts(nextPosts);
+    setIsDirty(true);
+    setMessage("");
   }
 
   function updateTranslation(
@@ -85,36 +107,39 @@ export function AdminDashboard() {
   ) {
     updateSelectedPost((post) => {
       const translation = getTranslation(post, locale);
-      const nextTranslation = {
-        ...translation,
-        locale,
-        blocks: updater(translation.blocks),
-      };
-
       return {
         ...post,
         updatedAt: new Date().toISOString(),
         translations: {
           ...post.translations,
-          [locale]: nextTranslation,
+          [locale]: { ...translation, locale, blocks: updater(translation.blocks) },
         },
       };
     });
   }
 
-  function handleLogin() {
-    setMessage("");
-
-    if (email.trim().toLowerCase() !== adminEmail.toLowerCase()) {
-      setMessage("Email no autorizado");
-      return;
+  async function savePost() {
+    if (!selectedPost || isSaving) return;
+    setIsSaving(true);
+    setMessage("Guardando...");
+    try {
+      const res = await fetch(`/api/admin/posts/${selectedPost.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(selectedPost),
+      });
+      if (res.ok) {
+        setIsDirty(false);
+        setMessage("Guardado en Supabase ✓");
+      } else {
+        setMessage("Error al guardar");
+      }
+    } finally {
+      setIsSaving(false);
     }
-
-    setIsAuthenticated(true);
-    setMessage("Sesion local iniciada");
   }
 
-  function createPost() {
+  async function createPost() {
     const id = createId("post");
     const title = "Nuevo post";
     const now = new Date().toISOString();
@@ -145,27 +170,41 @@ export function AdminDashboard() {
       },
     };
 
-    const nextPosts = [newPost, ...posts];
-    persist(nextPosts, "Post creado como borrador");
-    setSelectedPostId(id);
-    setLocale("es");
+    const res = await fetch("/api/admin/posts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newPost),
+    });
+
+    if (res.ok) {
+      setPosts([newPost, ...posts]);
+      setSelectedPostId(id);
+      setLocale("es");
+      setIsDirty(false);
+      setMessage("Post creado");
+    } else {
+      setMessage("Error al crear el post");
+    }
   }
 
-  function deletePost() {
-    if (!selectedPost) {
-      return;
+  async function deletePost() {
+    if (!selectedPost) return;
+    const res = await fetch(`/api/admin/posts/${selectedPost.id}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      const nextPosts = posts.filter((post) => post.id !== selectedPost.id);
+      setPosts(nextPosts);
+      setSelectedPostId(nextPosts[0]?.id ?? "");
+      setIsDirty(false);
+      setMessage("Post eliminado");
+    } else {
+      setMessage("Error al eliminar");
     }
-
-    const nextPosts = posts.filter((post) => post.id !== selectedPost.id);
-    persist(nextPosts, "Post eliminado localmente");
-    setSelectedPostId(nextPosts[0]?.id ?? "");
   }
 
   function duplicateLocale() {
-    if (!selectedPost) {
-      return;
-    }
-
+    if (!selectedPost) return;
     updateSelectedPost((post) => {
       const source = getTranslation(post, "es");
       return {
@@ -183,8 +222,7 @@ export function AdminDashboard() {
   }
 
   function addBlock(type: ContentBlock["type"]) {
-    const block = createBlock(type);
-    updateTranslation((blocks) => [...blocks, block]);
+    updateTranslation((blocks) => [...blocks, createBlock(type)]);
   }
 
   function updateBlock(blockId: string, nextBlock: ContentBlock) {
@@ -194,18 +232,18 @@ export function AdminDashboard() {
   }
 
   function removeBlock(blockId: string) {
-    updateTranslation((blocks) => blocks.filter((block) => block.id !== blockId));
+    updateTranslation((blocks) =>
+      blocks.filter((block) => block.id !== blockId),
+    );
   }
 
   function moveBlock(blockId: string, direction: -1 | 1) {
     updateTranslation((blocks) => {
       const index = blocks.findIndex((block) => block.id === blockId);
       const targetIndex = index + direction;
-
       if (index < 0 || targetIndex < 0 || targetIndex >= blocks.length) {
         return blocks;
       }
-
       const copy = [...blocks];
       const [item] = copy.splice(index, 1);
       copy.splice(targetIndex, 0, item);
@@ -213,34 +251,40 @@ export function AdminDashboard() {
     });
   }
 
-  function restoreSeedData() {
-    const nextPosts = cloneSeedPosts();
-    persist(nextPosts, "Seeds restaurados");
-    setSelectedPostId(nextPosts[0]?.id ?? "");
+  // --- Pantalla de carga mientras verifica la sesión ---
+  if (isAuthenticated === null) {
+    return (
+      <main className="admin-login">
+        <div className="login-panel">
+          <span className="eyebrow">Admin</span>
+          <p className="muted">Verificando sesión...</p>
+        </div>
+      </main>
+    );
   }
 
+  // --- Pantalla de login ---
   if (!isAuthenticated) {
     return (
       <main className="admin-login">
         <form
           className="login-panel"
-          onSubmit={(event) => {
-            event.preventDefault();
-            handleLogin();
-          }}
+          onSubmit={handleLogin}
         >
-          <span className="eyebrow">Admin local</span>
+          <span className="eyebrow">Admin</span>
           <h1>Entrar a PMag</h1>
           <p>
-            Acceso privado para gestionar posts. En produccion se reemplaza por
-            magic link de Supabase limitado al email autorizado.
+            Acceso privado para gestionar posts. El contenido se guarda
+            directamente en Supabase y es visible para todos los visitantes.
           </p>
           <label>
-            Email autorizado
+            Contraseña
             <input
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="Ingresar email"
-              value={email}
+              autoComplete="current-password"
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Contraseña de admin"
+              type="password"
+              value={password}
             />
           </label>
           <div className="login-actions">
@@ -257,10 +301,11 @@ export function AdminDashboard() {
     );
   }
 
+  // --- Estado vacío ---
   if (!selectedPost || !selectedTranslation) {
     return (
       <main className="admin-shell">
-        <AdminTopbar onCreate={createPost} onLogout={() => setIsAuthenticated(false)} />
+        <AdminTopbar onCreate={createPost} onLogout={handleLogout} />
         <section className="empty-state">
           <h1>No hay posts</h1>
           <button className="primary-button" onClick={createPost} type="button">
@@ -273,33 +318,49 @@ export function AdminDashboard() {
 
   return (
     <main className="admin-shell">
-      <AdminTopbar onCreate={createPost} onLogout={() => setIsAuthenticated(false)} />
-      <div className="admin-layout">
-        <aside className="post-list-panel">
+      <AdminTopbar onCreate={createPost} onLogout={handleLogout} />
+      <div className={`admin-layout${sidebarCollapsed ? " sidebar-collapsed" : ""}`}>
+        <aside className={`post-list-panel${sidebarCollapsed ? " collapsed" : ""}`}>
           <div className="panel-heading">
-            <span className="eyebrow">Posts</span>
-            <button onClick={restoreSeedData} title="Restaurar seeds" type="button">
-              <ListPlus size={18} />
-            </button>
+            {!sidebarCollapsed && <span className="eyebrow">Posts</span>}
+            <div style={{ display: "flex", gap: "6px" }}>
+              <button
+                onClick={() => setSidebarCollapsed((v) => !v)}
+                title={sidebarCollapsed ? "Expandir panel" : "Minimizar panel"}
+                type="button"
+              >
+                {sidebarCollapsed ? (
+                  <PanelLeftOpen size={18} />
+                ) : (
+                  <PanelLeftClose size={18} />
+                )}
+              </button>
+            </div>
           </div>
-          <div className="admin-post-list">
-            {posts.map((post) => {
-              const translation = getTranslation(post, "es");
-              return (
-                <button
-                  className={post.id === selectedPost.id ? "active" : ""}
-                  key={post.id}
-                  onClick={() => setSelectedPostId(post.id)}
-                  type="button"
-                >
-                  <span>{translation.title}</span>
-                  <small>
-                    {post.status} · {post.category}
-                  </small>
-                </button>
-              );
-            })}
-          </div>
+          {!sidebarCollapsed && (
+            <div className="admin-post-list">
+              {posts.map((post) => {
+                const translation = getTranslation(post, "es");
+                return (
+                  <button
+                    className={post.id === selectedPost.id ? "active" : ""}
+                    key={post.id}
+                    onClick={() => {
+                      setSelectedPostId(post.id);
+                      setIsDirty(false);
+                      setMessage("");
+                    }}
+                    type="button"
+                  >
+                    <span>{translation.title}</span>
+                    <small>
+                      {post.status} · {post.category}
+                    </small>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </aside>
 
         <section className="editor-panel">
@@ -317,7 +378,11 @@ export function AdminDashboard() {
               ))}
             </div>
             {!selectedPost.translations[locale] ? (
-              <button className="secondary-button" onClick={duplicateLocale} type="button">
+              <button
+                className="secondary-button"
+                onClick={duplicateLocale}
+                type="button"
+              >
                 Crear traduccion desde ES
               </button>
             ) : null}
@@ -334,11 +399,7 @@ export function AdminDashboard() {
                     slug: locale === "es" ? slugify(title) : post.slug,
                     translations: {
                       ...post.translations,
-                      [locale]: {
-                        ...selectedTranslation,
-                        locale,
-                        title,
-                      },
+                      [locale]: { ...selectedTranslation, locale, title },
                     },
                   }));
                 }}
@@ -460,13 +521,18 @@ export function AdminDashboard() {
           </div>
 
           <div className="editor-actions">
-            <button className="primary-button" onClick={() => persist(posts)} type="button">
+            <button
+              className="primary-button"
+              disabled={isSaving || !isDirty}
+              onClick={savePost}
+              type="button"
+            >
               <Save size={17} />
-              Guardar local
+              {isSaving ? "Guardando..." : isDirty ? "Guardar" : "Sin cambios"}
             </button>
             <button className="danger-button" onClick={deletePost} type="button">
               <Trash2 size={17} />
-              Delete post
+              Eliminar post
             </button>
             {message ? <span>{message}</span> : null}
           </div>
@@ -754,11 +820,7 @@ function ImageInput({
 }) {
   async function handleFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
+    if (!file) return;
     const dataUrl = await fileToDataUrl(file);
     onChange(dataUrl);
   }
@@ -780,50 +842,25 @@ function ImageInput({
 
 function createBlock(type: ContentBlock["type"]): ContentBlock {
   const id = createId("block");
-
-  if (type === "heading") {
-    return { id, type, level: 2, text: "Nuevo subtitulo" };
-  }
-
-  if (type === "paragraph") {
-    return { id, type, text: "Nuevo parrafo del post." };
-  }
-
+  if (type === "heading") return { id, type, level: 2, text: "Nuevo subtitulo" };
+  if (type === "paragraph") return { id, type, text: "Nuevo parrafo del post." };
   if (type === "image") {
     return {
-      id,
-      type,
+      id, type,
       src: "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=1200&q=80",
-      alt: "Imagen del post",
-      caption: "",
-      align: "center",
-      width: "wide",
+      alt: "Imagen del post", caption: "", align: "center", width: "wide",
     };
   }
-
   if (type === "gallery") {
     return {
-      id,
-      type,
+      id, type,
       images: [
-        {
-          id: createId("image"),
-          src: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80",
-          alt: "Imagen de galeria",
-        },
-        {
-          id: createId("image"),
-          src: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80",
-          alt: "Imagen de galeria",
-        },
+        { id: createId("image"), src: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80", alt: "Imagen de galeria" },
+        { id: createId("image"), src: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80", alt: "Imagen de galeria" },
       ],
     };
   }
-
-  if (type === "quote") {
-    return { id, type, text: "Nueva cita destacada.", byline: "" };
-  }
-
+  if (type === "quote") return { id, type, text: "Nueva cita destacada.", byline: "" };
   return { id, type: "divider" };
 }
 

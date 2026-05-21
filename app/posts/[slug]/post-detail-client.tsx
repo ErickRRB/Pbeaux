@@ -2,44 +2,19 @@
 
 import { ArrowLeft, Languages } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { BlockRenderer } from "@/components/block-renderer";
 import { SiteHeader } from "@/components/site-header";
 import { BlogPost, Locale } from "@/lib/content-types";
-import { getTranslation, loadStoredPosts } from "@/lib/content-store";
+import { getTranslation } from "@/lib/content-store";
 import { formatDate } from "@/lib/format";
 
 type PostDetailClientProps = {
-  slug: string;
+  post: BlogPost;
 };
 
-export function PostDetailClient({ slug }: PostDetailClientProps) {
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+export function PostDetailClient({ post }: PostDetailClientProps) {
   const [locale, setLocale] = useState<Locale>("es");
-
-  useEffect(() => {
-    setPosts(loadStoredPosts());
-  }, []);
-
-  const post = useMemo(
-    () => posts.find((item) => item.slug === slug),
-    [posts, slug],
-  );
-
-  if (!post) {
-    return (
-      <>
-        <SiteHeader locale={locale} onLocaleChange={setLocale} />
-        <main className="shell empty-state">
-          <h1>Post no encontrado</h1>
-          <p>Puede ser un borrador local o un slug que todavia no existe.</p>
-          <Link className="button-link" href="/">
-            Volver al inicio
-          </Link>
-        </main>
-      </>
-    );
-  }
 
   const translation = getTranslation(post, locale);
   const selectedLocaleExists = Boolean(post.translations[locale]);

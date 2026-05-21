@@ -1,3 +1,4 @@
+import { Instagram } from "lucide-react";
 import Link from "next/link";
 import { LOCALES, Locale } from "@/lib/content-types";
 
@@ -14,6 +15,15 @@ export function SiteHeader({ locale, onLocaleChange }: SiteHeaderProps) {
           PMag
         </Link>
         <nav className="nav-links" aria-label="Navegacion principal">
+          <a
+            aria-label="Instagram de PMag"
+            className="nav-instagram"
+            href="https://www.instagram.com/pbravofr/"
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            <Instagram size={17} />
+          </a>
           <div className="locale-switcher" aria-label="Idioma">
             {LOCALES.map((item) => (
               <button

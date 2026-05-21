@@ -113,6 +113,25 @@ button:disabled {
   padding: 0 11px;
 }
 
+.nav-instagram {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--muted);
+  transition: color 160ms ease, border-color 160ms ease;
+  padding: 0;
+}
+
+.nav-instagram:hover {
+  border-color: #c13584;
+  color: #c13584;
+}
+
 .locale-switcher button[aria-pressed="true"] {
   border-color: var(--ink);
   background: var(--ink);
@@ -135,8 +154,11 @@ button:disabled {
 }
 
 .collage-hero {
+  position: relative;
   overflow: hidden;
-  min-height: 620px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
   border-bottom: 1px solid var(--line);
   background:
     linear-gradient(180deg, rgba(251, 250, 247, 0.98), rgba(251, 250, 247, 0.86)),
@@ -147,10 +169,34 @@ button:disabled {
 .collage-stage {
   position: relative;
   display: grid;
+  flex: 1;
   grid-template-columns: 240px minmax(0, 1fr) 240px;
   gap: 28px;
-  min-height: 510px;
-  padding: 20px 24px 58px;
+  padding: 20px 24px 72px;
+}
+
+.scroll-hint {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: var(--muted);
+  opacity: 0.6;
+  animation: scroll-bounce 2.4s ease-in-out infinite;
+}
+
+.scroll-hint:hover {
+  opacity: 1;
+}
+
+@keyframes scroll-bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.6; }
+  50% { transform: translateX(-50%) translateY(8px); opacity: 0.9; }
 }
 
 .tile-stack {
@@ -658,6 +704,19 @@ textarea {
   grid-template-columns: 300px minmax(0, 1.35fr) minmax(360px, 0.9fr);
   gap: 16px;
   padding: 16px;
+  transition: grid-template-columns 200ms ease;
+}
+
+.admin-layout.sidebar-collapsed {
+  grid-template-columns: 52px minmax(0, 1.35fr) minmax(360px, 0.9fr);
+}
+
+.post-list-panel.collapsed {
+  padding: 12px 8px;
+}
+
+.post-list-panel.collapsed .panel-heading {
+  justify-content: center;
 }
 
 .post-list-panel,
@@ -885,6 +944,10 @@ textarea {
 @media (max-width: 1120px) {
   .admin-layout {
     grid-template-columns: 260px minmax(0, 1fr);
+  }
+
+  .admin-layout.sidebar-collapsed {
+    grid-template-columns: 52px minmax(0, 1fr);
   }
 
   .preview-panel {

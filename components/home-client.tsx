@@ -1,11 +1,11 @@
 "use client";
 
-import { Compass, Search, Sparkles } from "lucide-react";
+import { ChevronDown, Compass, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { BlogPost, Locale } from "@/lib/content-types";
 import { formatDate } from "@/lib/format";
-import { getTranslation, loadStoredPosts } from "@/lib/content-store";
+import { getTranslation } from "@/lib/content-store";
 import { SiteHeader } from "./site-header";
 
 const collageImages = [
@@ -21,25 +21,20 @@ const collageImages = [
   "https://images.unsplash.com/photo-1526481280693-3bfa7568e0f3?auto=format&fit=crop&w=500&q=80",
 ];
 
-export function HomeClient() {
-  const [posts, setPosts] = useState<BlogPost[]>(() => loadStoredPosts());
+type HomeClientProps = {
+  initialPosts: BlogPost[];
+};
+
+export function HomeClient({ initialPosts }: HomeClientProps) {
   const [locale, setLocale] = useState<Locale>("es");
   const [query, setQuery] = useState("");
-
-  useEffect(() => {
-    setPosts(loadStoredPosts());
-  }, []);
 
   const publishedPosts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
-    return posts
-      .filter((post) => post.status === "published")
+    return initialPosts
       .filter((post) => {
-        if (!normalizedQuery) {
-          return true;
-        }
-
+        if (!normalizedQuery) return true;
         const translation = getTranslation(post, locale);
         return `${translation.title} ${translation.excerpt} ${post.category}`
           .toLowerCase()
@@ -49,7 +44,7 @@ export function HomeClient() {
         (a, b) =>
           new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
       );
-  }, [locale, posts, query]);
+  }, [locale, initialPosts, query]);
 
   const featured = publishedPosts.filter((post) => post.featured).slice(0, 2);
   const latest = publishedPosts.slice(0, 6);
@@ -87,6 +82,9 @@ export function HomeClient() {
           </div>
           <ImageStack images={collageImages.slice(5)} />
         </div>
+        <a aria-label="Ver contenido" className="scroll-hint" href="#posts">
+          <ChevronDown size={26} />
+        </a>
       </section>
 
       <main className="shell" id="posts">
