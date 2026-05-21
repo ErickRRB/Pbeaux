@@ -43,6 +43,8 @@ export function AdminDashboard() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [password, setPassword] = useState("");
+  const [toast, setToast] = useState("");
+  const toastTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const selectedPost = useMemo(
     () => posts.find((post) => post.id === selectedPostId) ?? posts[0],
@@ -203,6 +205,58 @@ export function AdminDashboard() {
       setMessage("Post eliminado");
     } else {
       setMessage("Error al eliminar");
+    }
+  }
+
+  function showToast(message: string) {
+    setToast(message);
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(""), 3500);
+  }
+
+  function handleFeaturedToggle(checked: boolean) {
+    if (!selectedPost) return;
+
+    if (!checked) {
+      updateSelectedPost((post) => ({ ...post, featured: false }));
+      return;
+    }
+
+    const alreadyFeatured = posts.filter(
+      (p) => p.featured && p.id !== selectedPost.id,
+    );
+
+    if (alreadyFeatured.length >= 2) {
+      // De-feature the oldest of the currently featured posts
+      const oldest = alreadyFeatured.reduce((a, b) =>
+        new Date(a.publishedAt) < new Date(b.publishedAt) ? a : b,
+      );
+      const oldestTitle = getTranslation(oldest, "es").title;
+      const updatedOldest = { ...oldest, featured: false };
+
+      setPosts((prev) =>
+        prev.map((p) => {
+          if (p.id === oldest.id) return updatedOldest;
+          if (p.id === selectedPost.id) return { ...p, featured: true };
+          return p;
+        }),
+      );
+      setIsDirty(true);
+
+      // Save the de-featured post immediately in the background
+      fetch(`/api/admin/posts/${oldest.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedOldest),
+      }).catch(() => {});
+
+      const shortTitle =
+        oldestTitle.length > 45
+          ? oldestTitle.slice(0, 45) + "…"
+          : oldestTitle;
+      showToast(`"${shortTitle}" fue removido de destacados`);
+    } else {
+      updateSelectedPost((post) => ({ ...post, featured: true }));
     }
   }
 
@@ -487,12 +541,7 @@ export function AdminDashboard() {
             <label className="checkbox-label">
               <input
                 checked={selectedPost.featured}
-                onChange={(event) =>
-                  updateSelectedPost((post) => ({
-                    ...post,
-                    featured: event.target.checked,
-                  }))
-                }
+                onChange={(event) => handleFeaturedToggle(event.target.checked)}
                 type="checkbox"
               />
               Destacado (Editor&apos;s Choice)
@@ -595,6 +644,7 @@ export function AdminDashboard() {
           )}
         </aside>
       </div>
+      {toast && <div className="admin-toast">{toast}</div>}
     </main>
   );
 }
