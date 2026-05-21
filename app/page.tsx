@@ -8,8 +8,8 @@ export default async function Home() {
   let posts: BlogPost[] = [];
   try {
     posts = await fetchPublishedPosts();
-  } catch {
-    // Si Supabase no está disponible, muestra la home vacía
+  } catch (err) {
+    console.error("[home] fetchPublishedPosts failed:", err);
   }
   return <HomeClient initialPosts={posts} />;
 }
