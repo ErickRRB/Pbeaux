@@ -875,6 +875,17 @@ textarea {
   display: none;
 }
 
+.file-button.uploading {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.upload-error {
+  font-size: 12px;
+  color: var(--danger);
+  margin-top: 4px;
+}
+
 .gallery-admin-item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 0.55fr);

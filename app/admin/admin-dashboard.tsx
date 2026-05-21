@@ -818,11 +818,31 @@ function ImageInput({
   onChange: (value: string) => void;
   value: string;
 }) {
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
+
   async function handleFile(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
-    const dataUrl = await fileToDataUrl(file);
-    onChange(dataUrl);
+    setUploading(true);
+    setUploadError("");
+    try {
+      const body = new FormData();
+      body.append("file", file);
+      const res = await fetch("/api/admin/upload", { method: "POST", body });
+      if (res.ok) {
+        const { url } = await res.json();
+        onChange(url);
+      } else {
+        const { error } = await res.json();
+        setUploadError(error ?? "Error al subir");
+      }
+    } catch {
+      setUploadError("Error de red al subir");
+    } finally {
+      setUploading(false);
+      event.target.value = "";
+    }
   }
 
   return (
@@ -831,11 +851,12 @@ function ImageInput({
         {label} URL
         <input onChange={(event) => onChange(event.target.value)} value={value} />
       </label>
-      <label className="file-button">
+      <label className={`file-button${uploading ? " uploading" : ""}`}>
         <ImagePlus size={17} />
-        Subir archivo local
-        <input accept="image/*" onChange={handleFile} type="file" />
+        {uploading ? "Subiendo..." : "Subir desde PC"}
+        <input accept="image/*" disabled={uploading} onChange={handleFile} type="file" />
       </label>
+      {uploadError ? <span className="upload-error">{uploadError}</span> : null}
     </div>
   );
 }
@@ -864,11 +885,3 @@ function createBlock(type: ContentBlock["type"]): ContentBlock {
   return { id, type: "divider" };
 }
 
-function fileToDataUrl(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result));
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
