@@ -140,7 +140,7 @@ export function AdminDashboard() {
   }
 
   async function createPost() {
-    const id = createId("post");
+    const id = crypto.randomUUID();
     const title = "Nuevo post";
     const now = new Date().toISOString();
     const newPost: BlogPost = {
