@@ -1,0 +1,13 @@
+services:
+  web:
+    build:
+      context: .
+      target: dev
+    command: npm run dev
+    ports:
+      - "3001:3000"
+    environment:
+      NEXT_PUBLIC_ADMIN_EMAIL: ${NEXT_PUBLIC_ADMIN_EMAIL:-you@example.com}
+    volumes:
+      - .:/app
+      - /app/node_modules

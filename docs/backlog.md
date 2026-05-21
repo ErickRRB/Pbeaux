@@ -16,18 +16,25 @@ Proyecto en etapa de definicion y prototipo. La base visual elegida es "Collage 
 - Se definio migrar los ultimos 4 o 5 posts actuales.
 - Se eligio stack recomendado: Next.js + Supabase + Vercel.
 - Se acepto trabajar primero con placeholders locales en Docker.
+- Se inicializo app Next.js en la raiz del repo.
+- Se implemento home con hero collage editorial.
+- Se implemento detalle de post en `/posts/[slug]`.
+- Se implemento admin local en `/admin`.
+- Se implemento editor por bloques visuales con texto, heading, imagen, galeria, cita y separador.
+- Se implemento seleccion de idioma SPA/ENG/FRA y creacion de traduccion desde ES.
+- Se agregaron seeds locales con los 5 posts iniciales detectados desde Mozello.
+- Se agrego Dockerfile y docker-compose para desarrollo local en `localhost:3001`.
+- Se valido `npm run typecheck` y `npm run build`.
 
 ## Pendiente inmediato
 
-- Crear app Next.js dentro del repo.
-- Migrar el prototipo A al frontend real.
-- Elegir libreria/base tecnica para el editor por bloques.
-- Crear Docker Compose local.
-- Definir schema inicial de posts/traducciones/bloques.
-- Crear seeds con posts migrados desde Mozello.
-- Implementar home con datos locales.
-- Implementar pagina de detalle de post.
-- Implementar admin local con login placeholder.
+- Revisar visualmente la app en navegador y ajustar detalles responsive.
+- Definir si el editor por bloques queda custom o se reemplaza por libreria dedicada.
+- Conectar persistencia real local: Postgres/Prisma o Supabase local.
+- Implementar upload persistente de imagenes en storage local.
+- Extraer contenido real completo de los posts de Mozello.
+- Convertir posts migrados a bloques reales.
+- Definir email real autorizado para admin.
 
 ## Backlog funcional
 
@@ -46,18 +53,18 @@ Proyecto en etapa de definicion y prototipo. La base visual elegida es "Collage 
 
 ### Admin
 
-- Login por email autorizado.
-- Listado de posts.
-- Crear post.
-- Editar post.
-- Eliminar post.
-- Guardar borrador.
-- Publicar/despublicar.
-- Subir imagen de portada.
-- Insertar imagenes dentro del contenido.
-- Reordenar bloques.
-- Crear traduccion EN/FR a partir del post ES.
-- Preview antes de publicar.
+- Login por email autorizado. Estado: placeholder local.
+- Listado de posts. Estado: implementado local.
+- Crear post. Estado: implementado local.
+- Editar post. Estado: implementado local.
+- Eliminar post. Estado: implementado local.
+- Guardar borrador. Estado: implementado local.
+- Publicar/despublicar. Estado: implementado local.
+- Subir imagen de portada. Estado: pendiente.
+- Insertar imagenes dentro del contenido. Estado: implementado con URL/data URL local.
+- Reordenar bloques. Estado: implementado local.
+- Crear traduccion EN/FR a partir del post ES. Estado: implementado local.
+- Preview antes de publicar. Estado: implementado local.
 
 ### Migracion
 
