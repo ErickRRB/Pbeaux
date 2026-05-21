@@ -2,7 +2,7 @@
 
 import { ChevronDown, Compass, Search, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BlogPost, Locale } from "@/lib/content-types";
 import { formatDate } from "@/lib/format";
 import { getTranslation } from "@/lib/content-store";
@@ -21,6 +21,8 @@ const collageImages = [
   "https://images.unsplash.com/photo-1526481280693-3bfa7568e0f3?auto=format&fit=crop&w=500&q=80",
 ];
 
+const POSTS_PAGE_SIZE = 6;
+
 type HomeClientProps = {
   initialPosts: BlogPost[];
 };
@@ -28,6 +30,7 @@ type HomeClientProps = {
 export function HomeClient({ initialPosts }: HomeClientProps) {
   const [locale, setLocale] = useState<Locale>("es");
   const [query, setQuery] = useState("");
+  const [visiblePostCount, setVisiblePostCount] = useState(POSTS_PAGE_SIZE);
 
   const publishedPosts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -47,7 +50,13 @@ export function HomeClient({ initialPosts }: HomeClientProps) {
   }, [locale, initialPosts, query]);
 
   const featured = publishedPosts.filter((post) => post.featured).slice(0, 2);
-  const latest = publishedPosts.slice(0, 6);
+  const latest = publishedPosts.slice(0, visiblePostCount);
+  const remainingPosts = Math.max(publishedPosts.length - visiblePostCount, 0);
+  const hasMorePosts = remainingPosts > 0;
+
+  useEffect(() => {
+    setVisiblePostCount(POSTS_PAGE_SIZE);
+  }, [locale, query]);
 
   return (
     <>
@@ -142,6 +151,25 @@ export function HomeClient({ initialPosts }: HomeClientProps) {
             );
           })}
         </section>
+
+        {hasMorePosts ? (
+          <div className="load-more-posts">
+            <button
+              className="secondary-button"
+              onClick={() =>
+                setVisiblePostCount((count) => count + POSTS_PAGE_SIZE)
+              }
+              type="button"
+            >
+              Ver más notas
+            </button>
+            <span>
+              {remainingPosts > POSTS_PAGE_SIZE
+                ? `${remainingPosts} posts más disponibles`
+                : `${remainingPosts} ${remainingPosts === 1 ? "post más" : "posts más"}`}
+            </span>
+          </div>
+        ) : null}
       </main>
     </>
   );
