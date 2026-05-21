@@ -449,18 +449,22 @@ export function AdminDashboard() {
                 value={selectedPost.category}
               />
             </label>
-            <label>
-              Cover image URL
-              <input
-                onChange={(event) =>
-                  updateSelectedPost((post) => ({
-                    ...post,
-                    coverImage: event.target.value,
-                  }))
+            <div className="cover-image-field">
+              <ImageInput
+                label="Cover image"
+                onChange={(coverImage) =>
+                  updateSelectedPost((post) => ({ ...post, coverImage }))
                 }
                 value={selectedPost.coverImage}
               />
-            </label>
+              {selectedPost.coverImage && (
+                <img
+                  alt="cover preview"
+                  className="cover-image-preview"
+                  src={selectedPost.coverImage}
+                />
+              )}
+            </div>
             <label>
               Estado
               <select
@@ -639,6 +643,7 @@ function BlockFields({
           Texto
           <input
             onChange={(event) => onUpdate({ ...block, text: event.target.value })}
+            placeholder="Subtítulo del post"
             value={block.text}
           />
         </label>
@@ -664,6 +669,7 @@ function BlockFields({
         Texto
         <textarea
           onChange={(event) => onUpdate({ ...block, text: event.target.value })}
+          placeholder="Escribí el párrafo aquí..."
           value={block.text}
         />
       </label>
@@ -677,6 +683,7 @@ function BlockFields({
           Cita
           <textarea
             onChange={(event) => onUpdate({ ...block, text: event.target.value })}
+            placeholder="Texto de la cita destacada"
             value={block.text}
           />
         </label>
@@ -684,6 +691,7 @@ function BlockFields({
           Autor
           <input
             onChange={(event) => onUpdate({ ...block, byline: event.target.value })}
+            placeholder="Nombre o fuente"
             value={block.byline ?? ""}
           />
         </label>
@@ -863,25 +871,21 @@ function ImageInput({
 
 function createBlock(type: ContentBlock["type"]): ContentBlock {
   const id = createId("block");
-  if (type === "heading") return { id, type, level: 2, text: "Nuevo subtitulo" };
-  if (type === "paragraph") return { id, type, text: "Nuevo parrafo del post." };
+  if (type === "heading") return { id, type, level: 2, text: "" };
+  if (type === "paragraph") return { id, type, text: "" };
   if (type === "image") {
-    return {
-      id, type,
-      src: "https://images.unsplash.com/photo-1528605248644-14dd04022da1?auto=format&fit=crop&w=1200&q=80",
-      alt: "Imagen del post", caption: "", align: "center", width: "wide",
-    };
+    return { id, type, src: "", alt: "", caption: "", align: "center", width: "wide" };
   }
   if (type === "gallery") {
     return {
       id, type,
       images: [
-        { id: createId("image"), src: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80", alt: "Imagen de galeria" },
-        { id: createId("image"), src: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80", alt: "Imagen de galeria" },
+        { id: createId("image"), src: "", alt: "" },
+        { id: createId("image"), src: "", alt: "" },
       ],
     };
   }
-  if (type === "quote") return { id, type, text: "Nueva cita destacada.", byline: "" };
+  if (type === "quote") return { id, type, text: "", byline: "" };
   return { id, type: "divider" };
 }
 
