@@ -94,9 +94,8 @@ export function HomeClient({ initialPosts }: HomeClientProps) {
             <h2>Notas destacadas</h2>
           </div>
           <p>
-            El nuevo PMag parte de una portada visual con cards editoriales.
-            Cada card abre un post y respeta el idioma elegido cuando exista la
-            traduccion.
+            Una selección breve para entrar directo a las historias con más
+            pulso del momento.
           </p>
         </section>
 

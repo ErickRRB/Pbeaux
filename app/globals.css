@@ -335,6 +335,7 @@ button:disabled {
   font-size: clamp(34px, 4vw, 54px);
   font-weight: 500;
   line-height: 0.98;
+  text-wrap: balance;
 }
 
 .post-grid {
@@ -345,6 +346,8 @@ button:disabled {
 }
 
 .post-card {
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   min-height: 354px;
   border: 1px solid var(--line);
@@ -359,15 +362,20 @@ button:disabled {
 }
 
 .post-card .copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   padding: 18px;
 }
 
 .post-card h3 {
   margin: 14px 0 10px;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 25px;
+  font-size: clamp(21px, 1.7vw, 25px);
   font-weight: 500;
-  line-height: 1.05;
+  line-height: 1.08;
+  overflow-wrap: break-word;
+  text-wrap: balance;
 }
 
 .post-card p {
@@ -377,10 +385,13 @@ button:disabled {
 }
 
 .post-meta {
-  gap: 10px;
-  margin-top: 18px;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 18px;
   color: var(--muted);
   font-size: 13px;
+  text-align: right;
 }
 
 .text-link,
@@ -398,8 +409,8 @@ button:disabled {
 
 .post-hero {
   display: grid;
-  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-  gap: 34px;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 0.9fr);
+  gap: clamp(24px, 4vw, 56px);
   align-items: end;
   margin-top: 20px;
 }
@@ -407,9 +418,11 @@ button:disabled {
 .post-hero-copy h1 {
   margin: 18px 0;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(44px, 7vw, 86px);
+  font-size: clamp(42px, 5.4vw, 72px);
   font-weight: 500;
-  line-height: 0.95;
+  line-height: 0.98;
+  overflow-wrap: break-word;
+  text-wrap: balance;
 }
 
 .post-hero-copy > p {
@@ -422,7 +435,7 @@ button:disabled {
 
 .post-hero figure {
   overflow: hidden;
-  height: 520px;
+  height: clamp(360px, 44vw, 520px);
   margin: 0;
   border-radius: 8px;
   box-shadow: var(--shadow);
@@ -499,7 +512,9 @@ button:disabled {
 }
 
 .inline-image img {
+  width: 100%;
   max-height: 580px;
+  object-fit: cover;
 }
 
 .image-normal {
@@ -522,12 +537,22 @@ button:disabled {
 
 .image-left {
   margin-left: 0;
+  margin-right: auto;
   transform: none;
 }
 
 .image-right {
+  margin-left: auto;
   margin-right: 0;
   transform: none;
+}
+
+.image-left.image-wide,
+.image-right.image-wide,
+.image-left.image-full,
+.image-right.image-full {
+  width: 100%;
+  max-width: 760px;
 }
 
 .gallery-block {
@@ -1210,8 +1235,38 @@ article.font-fraunces blockquote {
     gap: 14px;
   }
 
+  .post-card .copy {
+    min-height: 0;
+  }
+
+  .post-card h3 {
+    font-size: 22px;
+  }
+
+  .post-meta {
+    justify-content: flex-end;
+    width: 100%;
+  }
+
+  .post-hero-copy h1 {
+    font-size: clamp(33px, 10vw, 44px);
+    line-height: 1;
+  }
+
   .post-hero figure {
     height: 330px;
+  }
+
+  .image-left,
+  .image-right,
+  .image-left.image-wide,
+  .image-right.image-wide,
+  .image-left.image-full,
+  .image-right.image-full {
+    width: 100%;
+    max-width: none;
+    margin-right: auto;
+    margin-left: auto;
   }
 
   .gallery-block {
