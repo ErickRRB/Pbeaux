@@ -223,6 +223,12 @@ export function AdminDashboard() {
 
   async function deletePost() {
     if (!selectedPost) return;
+    const title = getTranslation(selectedPost, "es").title;
+    const confirmed = window.confirm(
+      `Vas a eliminar el post "${title}". Esta acción no se puede deshacer.\n\n¿Eliminarlo de todas formas?`,
+    );
+    if (!confirmed) return;
+
     const res = await fetch(`/api/admin/posts/${selectedPost.id}`, {
       method: "DELETE",
     });
@@ -495,15 +501,24 @@ export function AdminDashboard() {
                 </button>
               ))}
             </div>
-            {!selectedPost.translations[locale] ? (
+            <div className="editor-top-actions">
               <button
-                className="secondary-button"
-                onClick={duplicateLocale}
+                className={`featured-toggle${selectedPost.featured ? " active" : ""}`}
+                onClick={() => handleFeaturedToggle(!selectedPost.featured)}
                 type="button"
               >
-                Crear traduccion desde ES
+                {selectedPost.featured ? "✓ Editor's Choice" : "Editor's Choice"}
               </button>
-            ) : null}
+              {!selectedPost.translations[locale] ? (
+                <button
+                  className="secondary-button"
+                  onClick={duplicateLocale}
+                  type="button"
+                >
+                  Crear traduccion desde ES
+                </button>
+              ) : null}
+            </div>
           </div>
 
           <div className="post-fields">
@@ -584,29 +599,30 @@ export function AdminDashboard() {
                 />
               )}
             </div>
-            <label>
-              Tipografía
-              <select
-                onChange={(event) =>
-                  updateSelectedPost((post) => ({ ...post, font: event.target.value }))
-                }
-                value={selectedPost.font ?? "editorial"}
-              >
-                <option value="editorial">Editorial · Georgia</option>
-                <option value="playfair">Elegante · Playfair Display</option>
-                <option value="lora">Literaria · Lora</option>
-                <option value="inter">Moderna · Inter</option>
-                <option value="fraunces">Distintiva · Fraunces</option>
-              </select>
-            </label>
-            <label className="checkbox-label">
-              <input
-                checked={selectedPost.featured}
-                onChange={(event) => handleFeaturedToggle(event.target.checked)}
-                type="checkbox"
-              />
-              Destacado (Editor&apos;s Choice)
-            </label>
+            <div className="font-field">
+              <span>Tipografía</span>
+              <div className="font-options">
+                {[
+                  ["editorial", "Editorial", "Georgia"],
+                  ["playfair", "Elegante", "Playfair"],
+                  ["lora", "Literaria", "Lora"],
+                  ["inter", "Moderna", "Inter"],
+                  ["fraunces", "Distintiva", "Fraunces"],
+                ].map(([value, label, family]) => (
+                  <button
+                    className={`font-option font-${value}${(selectedPost.font ?? "editorial") === value ? " active" : ""}`}
+                    key={value}
+                    onClick={() =>
+                      updateSelectedPost((post) => ({ ...post, font: value }))
+                    }
+                    type="button"
+                  >
+                    <strong>{label}</strong>
+                    <small>{family}</small>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="block-toolbar">
@@ -670,7 +686,7 @@ export function AdminDashboard() {
             >
               {selectedPost.status === "published" ? "● Publicado" : "○ Borrador"}
             </button>
-            <button className="danger-button" onClick={deletePost} type="button">
+            <button className="danger-button delete-post-button" onClick={deletePost} type="button">
               <Trash2 size={17} />
               Eliminar post
             </button>
@@ -678,7 +694,7 @@ export function AdminDashboard() {
           </div>
         </section>
 
-        <aside className={`preview-panel${previewCollapsed ? " collapsed" : ""}`}>
+        <aside className={`preview-panel font-${selectedPost.font ?? "editorial"}${previewCollapsed ? " collapsed" : ""}`}>
           <div className="panel-heading">
             {!previewCollapsed && <span className="eyebrow">Preview</span>}
             <button

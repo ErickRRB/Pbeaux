@@ -100,6 +100,7 @@ button:disabled {
 }
 
 .nav-links a,
+.nav-contact,
 .locale-switcher button,
 .topic-tags span {
   display: inline-flex;
@@ -113,12 +114,13 @@ button:disabled {
   padding: 0 11px;
 }
 
-.nav-instagram {
+.nav-instagram,
+.nav-contact {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  min-height: 34px;
+  width: 38px;
+  min-height: 38px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.75);
@@ -130,6 +132,72 @@ button:disabled {
 .nav-instagram:hover {
   border-color: #c13584;
   color: #c13584;
+}
+
+.nav-contact:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.locale-switcher button {
+  min-height: 38px;
+  padding: 0 10px;
+}
+
+.locale-switcher button span {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.contact-popover-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: start end;
+  background: rgba(20, 20, 20, 0.08);
+  cursor: pointer;
+  padding: 82px 24px 24px;
+}
+
+.contact-popover {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  width: min(340px, calc(100vw - 32px));
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  padding: 18px 42px 18px 18px;
+  cursor: default;
+}
+
+.contact-popover strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.contact-popover span {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.contact-popover a {
+  color: var(--ink);
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.contact-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: inline-flex;
+  color: var(--muted);
 }
 
 .locale-switcher button[aria-pressed="true"] {
@@ -701,6 +769,16 @@ textarea {
   color: var(--danger);
 }
 
+.delete-post-button {
+  border-color: var(--danger);
+  background: var(--danger);
+  color: #fff;
+}
+
+.delete-post-button:hover {
+  filter: brightness(0.94);
+}
+
 .icon-button {
   width: 40px;
   padding: 0;
@@ -845,13 +923,82 @@ textarea {
 .post-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
   gap: 12px;
   margin-top: 18px;
 }
 
 .post-fields label:nth-child(2),
-.post-fields label:nth-child(5) {
+.cover-image-field {
   grid-column: 1 / -1;
+}
+
+.editor-top-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.featured-toggle {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--muted);
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.featured-toggle.active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: #fff;
+}
+
+.font-field {
+  display: grid;
+  gap: 8px;
+  align-self: start;
+}
+
+.font-field > span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.font-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.font-option {
+  display: grid;
+  justify-items: start;
+  min-height: 58px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 9px 11px;
+  text-align: left;
+}
+
+.font-option strong {
+  font-size: 14px;
+}
+
+.font-option small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.font-option.active {
+  border-color: var(--ink);
+  background: #f6f2ea;
+  box-shadow: inset 0 0 0 1px var(--ink);
 }
 
 .block-toolbar {
@@ -927,9 +1074,23 @@ textarea {
 
 .file-button {
   min-height: 42px;
+  height: 42px;
   background: #f2ede3;
   color: var(--ink);
   font-weight: 750;
+}
+
+.image-input .file-button {
+  display: inline-flex;
+  align-self: end;
+  border-style: dashed;
+  background: #f8f5ee;
+  font-size: 13px;
+}
+
+.image-input .file-button:hover {
+  border-color: var(--ink);
+  background: #f2ede3;
 }
 
 .file-button input {
@@ -1009,7 +1170,11 @@ article.font-playfair h1,
 article.font-playfair h2,
 article.font-playfair h3,
 article.font-playfair p,
-article.font-playfair blockquote {
+article.font-playfair blockquote,
+.preview-panel.font-playfair h2,
+.preview-panel.font-playfair h3,
+.preview-panel.font-playfair p,
+.preview-panel.font-playfair blockquote {
   font-family: "Playfair Display", Georgia, serif;
 }
 
@@ -1017,7 +1182,11 @@ article.font-lora h1,
 article.font-lora h2,
 article.font-lora h3,
 article.font-lora p,
-article.font-lora blockquote {
+article.font-lora blockquote,
+.preview-panel.font-lora h2,
+.preview-panel.font-lora h3,
+.preview-panel.font-lora p,
+.preview-panel.font-lora blockquote {
   font-family: "Lora", Georgia, serif;
 }
 
@@ -1025,7 +1194,11 @@ article.font-inter h1,
 article.font-inter h2,
 article.font-inter h3,
 article.font-inter p,
-article.font-inter blockquote {
+article.font-inter blockquote,
+.preview-panel.font-inter h2,
+.preview-panel.font-inter h3,
+.preview-panel.font-inter p,
+.preview-panel.font-inter blockquote {
   font-family: "Inter", system-ui, sans-serif;
 }
 
@@ -1033,7 +1206,11 @@ article.font-fraunces h1,
 article.font-fraunces h2,
 article.font-fraunces h3,
 article.font-fraunces p,
-article.font-fraunces blockquote {
+article.font-fraunces blockquote,
+.preview-panel.font-fraunces h2,
+.preview-panel.font-fraunces h3,
+.preview-panel.font-fraunces p,
+.preview-panel.font-fraunces blockquote {
   font-family: "Fraunces", Georgia, serif;
 }
 

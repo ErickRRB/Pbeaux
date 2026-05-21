@@ -1,5 +1,8 @@
-import { Instagram } from "lucide-react";
+"use client";
+
+import { Instagram, Mail, X } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { LOCALES, Locale } from "@/lib/content-types";
 
 type SiteHeaderProps = {
@@ -7,7 +10,15 @@ type SiteHeaderProps = {
   onLocaleChange?: (locale: Locale) => void;
 };
 
+const localeFlags: Record<Locale, string> = {
+  es: "🇪🇸",
+  en: "🇬🇧",
+  fr: "🇫🇷",
+};
+
 export function SiteHeader({ locale, onLocaleChange }: SiteHeaderProps) {
+  const [contactOpen, setContactOpen] = useState(false);
+
   return (
     <header className="site-top">
       <div className="shell nav">
@@ -15,6 +26,14 @@ export function SiteHeader({ locale, onLocaleChange }: SiteHeaderProps) {
           PMag
         </Link>
         <nav className="nav-links" aria-label="Navegacion principal">
+          <button
+            aria-label="Contacto por email"
+            className="nav-contact"
+            onClick={() => setContactOpen(true)}
+            type="button"
+          >
+            <Mail size={19} />
+          </button>
           <a
             aria-label="Instagram de PMag"
             className="nav-instagram"
@@ -22,7 +41,7 @@ export function SiteHeader({ locale, onLocaleChange }: SiteHeaderProps) {
             rel="noopener noreferrer"
             target="_blank"
           >
-            <Instagram size={17} />
+            <Instagram size={20} />
           </a>
           <div className="locale-switcher" aria-label="Idioma">
             {LOCALES.map((item) => (
@@ -32,12 +51,30 @@ export function SiteHeader({ locale, onLocaleChange }: SiteHeaderProps) {
                 onClick={() => onLocaleChange?.(item.code)}
                 type="button"
               >
+                <span aria-hidden="true">{localeFlags[item.code]}</span>
                 {item.label}
               </button>
             ))}
           </div>
         </nav>
       </div>
+      {contactOpen ? (
+        <div
+          className="contact-popover-backdrop"
+          onClick={() => setContactOpen(false)}
+        >
+          <span className="contact-popover">
+            <span className="contact-close" aria-hidden="true">
+              <X size={15} />
+            </span>
+            <strong>Contacto</strong>
+            <span>
+              Para consultas, colaboraciones o prensa, escribinos a{" "}
+              <a href="mailto:bravopat@gmail.com">bravopat@gmail.com</a>.
+            </span>
+          </span>
+        </div>
+      ) : null}
     </header>
   );
 }
