@@ -41,7 +41,7 @@ http://localhost:3000/admin
 El email del login placeholder se configura con:
 
 ```bash
-NEXT_PUBLIC_ADMIN_EMAIL=you@example.com
+NEXT_PUBLIC_ADMIN_EMAIL=bravopat@gmail.com
 ```
 
 Tambien se puede levantar con Docker:

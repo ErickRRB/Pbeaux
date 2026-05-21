@@ -33,7 +33,7 @@ import {
 } from "@/lib/content-store";
 import { createId, slugify } from "@/lib/format";
 
-const fallbackAdminEmail = "you@example.com";
+const fallbackAdminEmail = "bravopat@gmail.com";
 
 export function AdminDashboard() {
   const adminEmail =

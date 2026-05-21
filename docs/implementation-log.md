@@ -68,6 +68,8 @@ Inicializar la app Next.js en este repo, traer el prototipo A como base visual y
 - Seeds con los 5 posts iniciales candidatos desde Mozello.
 - Dockerfile y `docker-compose.yml` para desarrollo local.
 - Docker expone la app en `http://localhost:3001` para evitar choque con otro proceso local en `3000`.
+- Se ocultaron los accesos publicos a `Posts` y `Admin`; el admin queda como acceso directo por URL `/admin`.
+- El login placeholder acepta `bravopat@gmail.com` sin magic link.
 
 ### Validacion
 

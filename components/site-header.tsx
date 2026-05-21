@@ -14,8 +14,6 @@ export function SiteHeader({ locale, onLocaleChange }: SiteHeaderProps) {
           PMag
         </Link>
         <nav className="nav-links" aria-label="Navegacion principal">
-          <Link href="/#posts">Posts</Link>
-          <Link href="/admin">Admin</Link>
           <div className="locale-switcher" aria-label="Idioma">
             {LOCALES.map((item) => (
               <button

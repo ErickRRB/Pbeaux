@@ -34,7 +34,7 @@ Proyecto en etapa de definicion y prototipo. La base visual elegida es "Collage 
 - Implementar upload persistente de imagenes en storage local.
 - Extraer contenido real completo de los posts de Mozello.
 - Convertir posts migrados a bloques reales.
-- Definir email real autorizado para admin.
+- Definir email real autorizado para admin. Estado: definido placeholder `bravopat@gmail.com`.
 
 ## Backlog funcional
 
