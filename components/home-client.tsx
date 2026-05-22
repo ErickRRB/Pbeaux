@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Compass, Search, Sparkles } from "lucide-react";
+import { ChevronDown, CircleDot, Compass, Feather, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { BlogPost, Locale } from "@/lib/content-types";
@@ -22,6 +22,7 @@ const collageImages = [
 ];
 
 const POSTS_PAGE_SIZE = 6;
+const topicTags = ["Tendencias", "Gastronomia", "Streaming", "Argentina"];
 
 type HomeClientProps = {
   initialPosts: BlogPost[];
@@ -30,24 +31,30 @@ type HomeClientProps = {
 export function HomeClient({ initialPosts }: HomeClientProps) {
   const [locale, setLocale] = useState<Locale>("es");
   const [query, setQuery] = useState("");
+  const [activeTopic, setActiveTopic] = useState("");
   const [visiblePostCount, setVisiblePostCount] = useState(POSTS_PAGE_SIZE);
 
   const publishedPosts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
+    const normalizedTopic = activeTopic.toLowerCase();
 
     return initialPosts
       .filter((post) => {
-        if (!normalizedQuery) return true;
         const translation = getTranslation(post, locale);
-        return `${translation.title} ${translation.excerpt} ${post.category}`
-          .toLowerCase()
-          .includes(normalizedQuery);
+        const searchableText =
+          `${translation.title} ${translation.excerpt} ${post.category}`.toLowerCase();
+        const matchesQuery =
+          !normalizedQuery || searchableText.includes(normalizedQuery);
+        const matchesTopic =
+          !normalizedTopic || searchableText.includes(normalizedTopic);
+
+        return matchesQuery && matchesTopic;
       })
       .sort(
         (a, b) =>
           new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
       );
-  }, [locale, initialPosts, query]);
+  }, [activeTopic, locale, initialPosts, query]);
 
   const featured = publishedPosts.filter((post) => post.featured).slice(0, 2);
   const latest = publishedPosts.slice(0, visiblePostCount);
@@ -56,7 +63,7 @@ export function HomeClient({ initialPosts }: HomeClientProps) {
 
   useEffect(() => {
     setVisiblePostCount(POSTS_PAGE_SIZE);
-  }, [locale, query]);
+  }, [activeTopic, locale, query]);
 
   return (
     <>
@@ -66,7 +73,7 @@ export function HomeClient({ initialPosts }: HomeClientProps) {
           <ImageStack images={collageImages.slice(0, 5)} />
           <div className="collage-center">
             <span className="eyebrow">
-              <Sparkles size={14} />
+              <Feather size={14} />
               Revista digital
             </span>
             <h1>Historias que se sienten cerca</h1>
@@ -78,15 +85,24 @@ export function HomeClient({ initialPosts }: HomeClientProps) {
                 value={query}
               />
             </label>
-            <div className="topic-tags">
-              {["Tendencias", "Gastronomia", "Streaming", "Argentina"].map(
-                (tag) => (
-                  <span key={tag}>
+            <div className="topic-tags" aria-label="Filtros rápidos">
+              {topicTags.map((tag) => (
+                <button
+                  aria-pressed={activeTopic === tag}
+                  key={tag}
+                  onClick={() =>
+                    setActiveTopic((current) => (current === tag ? "" : tag))
+                  }
+                  type="button"
+                >
+                  {activeTopic === tag ? (
+                    <CircleDot size={13} />
+                  ) : (
                     <Compass size={13} />
-                    {tag}
-                  </span>
-                ),
-              )}
+                  )}
+                  {tag}
+                </button>
+              ))}
             </div>
           </div>
           <ImageStack images={collageImages.slice(5)} />

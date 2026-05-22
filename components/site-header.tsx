@@ -10,12 +10,6 @@ type SiteHeaderProps = {
   onLocaleChange?: (locale: Locale) => void;
 };
 
-const localeFlags: Record<Locale, string> = {
-  es: "🇪🇸",
-  en: "🇬🇧",
-  fr: "🇫🇷",
-};
-
 export function SiteHeader({ locale, onLocaleChange }: SiteHeaderProps) {
   const [contactOpen, setContactOpen] = useState(false);
 
@@ -51,7 +45,6 @@ export function SiteHeader({ locale, onLocaleChange }: SiteHeaderProps) {
                 onClick={() => onLocaleChange?.(item.code)}
                 type="button"
               >
-                <span aria-hidden="true">{localeFlags[item.code]}</span>
                 {item.label}
               </button>
             ))}

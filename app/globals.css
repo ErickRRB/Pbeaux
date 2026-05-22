@@ -102,7 +102,7 @@ button:disabled {
 .nav-links a,
 .nav-contact,
 .locale-switcher button,
-.topic-tags span {
+.topic-tags button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -142,11 +142,6 @@ button:disabled {
 .locale-switcher button {
   min-height: 38px;
   padding: 0 10px;
-}
-
-.locale-switcher button span {
-  font-size: 15px;
-  line-height: 1;
 }
 
 .contact-popover-backdrop {
@@ -331,6 +326,18 @@ button:disabled {
   margin-top: 18px;
   color: var(--muted);
   font-size: 13px;
+}
+
+.topic-tags button {
+  cursor: pointer;
+  transition: background 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.topic-tags button:hover,
+.topic-tags button[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: #f2ede3;
+  color: var(--ink);
 }
 
 .section-title {
